@@ -1,0 +1,12 @@
+login_check:
+    path: /login_check
+    methods: ['POST']
+
+api_login_check:
+  path: /api/login_check
+
+#creation users
+create_user:
+   path: /api/admin/users
+   controller: App\Controller\UserController::addUser
+   methods: ['POST']
