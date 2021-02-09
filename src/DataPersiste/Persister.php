@@ -32,7 +32,7 @@ final class Persister implements ContextAwareDataPersisterInterface
 
     public function remove($data, array $context = [] )
     {
-        $data->setArchive(0);
+        $data->setArchive(true);
         $this->manager->persist($data);
         $id = $data->getId();
         $users = $this->user->findBy(['profile'=>$id]);

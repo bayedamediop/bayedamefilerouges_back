@@ -48,7 +48,7 @@ class GroupeCompetenceController extends AbstractController
     /**
      * @Route (
      *     name="creatGroupeCompetence",
-     *      path="/api/admin/grpcompetences",
+     *      path="/api/adminssss/grpecompetences",
      *      methods={"POST"},
      *     defaults={
      *           "__controller"="App\Controller\GroupeCompetenceController::creatGroupeCompetence",
@@ -59,56 +59,64 @@ class GroupeCompetenceController extends AbstractController
      */
     public function creatGroupeCompetence(Request $request)
     {
-        $compObject= $this->serializer->decode($request->getContent(),'json');
-        //dd($compObject);
-        $groupeCompetene = new GroupeCompetence();
-        $groupeCompetene->setLibelle($compObject['libelle']);
-        $groupeCompetene->setDescription($compObject['description']);
-        foreach ($compObject['competence'] as $competence){
-            //dd($competence['libelle']);
-            // verification si competence existe ou pas via l'attribut libelle
-            if($this->competence->findOneBy(['libelle'=>$competence['libelle']])){
-               // recuperation l' objet de competence
-                $objCompetence =$this->competence->findOneBy(['libelle'=>$competence['libelle']]);
-
-                $groupeCompetene->addCompetence($objCompetence);
-                $this->em->persist($groupeCompetene);
-            }else{
-                if (isset($compObject['competence'][0]['niveau'])){
-                    $data = $compObject['competence'][0]['niveau'];
-                    //dd(count($data));
-                    if (count($data) == 3){
-                        //verification le nombre de competence a insere
-                        foreach ($compObject['competence'] as $objetCompetence){
-                            $competence = new Competence();
-                            $competence->setLibelle($objetCompetence['libelle']);
-                            $competence->setDescription($objetCompetence['description']);
-
-                            foreach ($data as $objetniveau){
-                                //dd($objetniveau);
-                                $niveau = new Niveau();
-                                $niveau->setLibelle($objetniveau['libelle'])
-                                    ->setCritereEvaluation($objetniveau['critereEvalution']);
-                                $competence->addNiveau($niveau);
-                                $this->em->persist($niveau);
-
-                            }
-                            $this->em->persist($competence);
-                            $groupeCompetene->addCompetence($competence);
-                            $this->em->persist($groupeCompetene);
-                        }
-                    }else{
-                        return new JsonResponse("Error please enter 3 levels!",400,[],true);
-
-                    }
+        $json = json_decode($request->getContent());
+       // dd($json,401);
+        
+        //verifions s'il faut crée le groupe oubien l'affecté des competences
+        if (isset($json->id)) {
+            $groupeCompetences = $this->groupe->find($json->id);
+        }else{
+            $groupeCompetences = null;
+        }
+        if ($groupeCompetences != null) {
+            //dans le cas ou groupe competence existe deja
+            for ($i=0; $i < count($json->competences); $i++) { 
+                if (isset($json->competences[$i]->id)) {
+                    //affectation la/les competences au groupe
+                    $competences = $this->competence->find($json->competences[$i]->id);
+                    $groupeCompetences->addCompetence($competences);
                 }else{
-                    return new JsonResponse("Error please enter 3 levels!",400,[],true);
+                    //creation de la/les competences
+                    $competences = new Competence;
+                    $competences->setLibelle($json->competences[$i]->libelle)
+                                ->setDescription($json->competences[$i]->description);
+                    $groupeCompetences->addCompetence($competences);
                 }
             }
-            $this->em->flush();
-        }
-        return $this->json("valider");
+            //validation competences avant mise a jour
+            $erreurscompetences = $this->validator->validate($competences);
+            if ($erreurscompetences) {
+                return $this->json($erreurscompetences);
+            }
+         
+        }else{ //si groupe de competence n'existe on crée
+            $groupeCompetences = new GroupeCompetence;
+                $groupeCompetences->setLibelle($json->libelle)
+                                  ->setDescription($json->description);
+            for ($i=0; $i < count($json->competences); $i++) { 
+                if (isset($json->competences[$i]->id)) {
+                    //affectation de la competence
+                    $competences = $this->competence->find($json->competences[$i]->id);
+                    $groupeCompetences->addCompetence($competences);
+                }else{
+                    //creation competence
+                    $competences = new Competence;
+                    $competences->setLibelle($json->competences[$i]->libelle)
+                                ->setDescription($json->competences[$i]->description);
+                    $groupeCompetences->addCompetence($competences);
+                }
+            }
+            //validation groupe competences
+            $erreurs = $this->validator->validate($groupeCompetences);
+            if ($erreurs) {
+                return $this->json($erreurs);
+            }
 
+            $this->em->persist($groupeCompetences);
+            
+        }
+        $this->em->flush();
+            return $this->json('added succesfully',Response::HTTP_OK);
     }
     /**
      * @Route (
@@ -150,6 +158,7 @@ class GroupeCompetenceController extends AbstractController
                }
            }
        }
+          //mettons a jour le bdd
         $this->em->flush();
         return $this->json("valider");
     }

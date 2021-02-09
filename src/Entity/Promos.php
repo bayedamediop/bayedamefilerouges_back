@@ -110,7 +110,7 @@ class Promos
     private $avatar;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="blob",nullable=true)
      * @Groups ({"promoRefForGroupe:read"})
      */
     private $fabrique;
@@ -159,10 +159,16 @@ class Promos
      */
     private $competenceValides;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Apprenant::class, inversedBy="promos")
+     */
+    private $apprenant;
+
     public function __construct()
     {
         $this->groupes = new ArrayCollection();
         $this->competenceValides = new ArrayCollection();
+        $this->apprenant = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -220,7 +226,11 @@ class Promos
 
     public function getAvatar()
     {
-        return $this->avatar;
+        $avatar = $this->avatar;
+        if ($avatar) {
+            return (base64_encode(stream_get_contents($this->avatar)));
+        }
+        return $avatar;
     }
 
     public function setAvatar($avatar): self
@@ -361,4 +371,18 @@ class Promos
 
         return $this;
     }
+
+    public function getApprenant(): ?Apprenant
+    {
+        return $this->apprenant;
+    }
+
+    public function setApprenant(?Apprenant $apprenant): self
+    {
+        $this->apprenant = $apprenant;
+
+        return $this;
+    }
+
+   
 }

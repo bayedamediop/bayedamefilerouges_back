@@ -12,7 +12,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ApiResource(
  *     collectionOperations={
- *        "get_referentielgrpcompetence"={
+  *       "add_referentiel"={
+ *                   "method" = "POST",
+ *                  "route_name"="creatReferentiels"
+ *              },
+ *        "get_referentiel"={
+ *                         "path"="/admin/referentiels",
+ *                          "method" = "GET",
+ *                           "normalization_context"={"groups"={"ref:read"}},
+ *                      },
+ * "get_referentielgrpcompetence"={
  *                         "path"="/admin/referentieles",
  *                          "method" = "GET",
  *                           "normalization_context"={"groups"={"referentiel:read"}},
@@ -29,6 +38,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *                          "method" = "GET",
  *                            "normalization_context"={"groups"={"referentiel:read"}}
  *                      },
+ *                      "edit_referentiel"={
+ *                         "route_name"="editReferentiels"
+ *                       },
  *                 }
  * )
  * @ORM\Entity(repositoryClass=ReferentielsRepository::class)
@@ -39,13 +51,13 @@ class Referentiels
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups ({"addreferentiel:read"})
+     * @Groups ({"addreferentiel:read","ref:read","referentiel:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups ({"promoRefForGroupe:read","referentiel:read"})
+     * @Groups ({"promoRefForGroupe:read","referentiel:read","ref:read"})
      */
     private $libelle;
 
@@ -56,7 +68,7 @@ class Referentiels
     private $presentation;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="blob",nullable=true)
      * @Groups ({"promoRefForGroupe:read","referentiel:read"})
      */
     private $programme;
@@ -85,10 +97,17 @@ class Referentiels
      */
     private $competenceValides;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=GroupeCompetence::class, inversedBy="referentiels")
+     * @Groups ({"referentiel:read"})
+     */
+    private $grpeCompetence;
+    
     public function __construct()
     {
         $this->promos = new ArrayCollection();
         $this->competenceValides = new ArrayCollection();
+        $this->competences = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -122,10 +141,14 @@ class Referentiels
 
     public function getProgramme(): ?string
     {
-        return $this->programme;
+        $programme = $this->programme;
+        if ($programme) {
+            return (base64_encode(stream_get_contents($this->programme)));
+        }
+        return $programme;
     }
 
-    public function setProgramme(string $programme): self
+    public function setProgramme( $programme): self
     {
         $this->programme = $programme;
 
@@ -215,4 +238,17 @@ class Referentiels
 
         return $this;
     }
+
+    public function getGrpeCompetence(): ?GroupeCompetence
+    {
+        return $this->grpeCompetence;
+    }
+
+    public function setGrpeCompetence(?GroupeCompetence $grpeCompetence): self
+    {
+        $this->grpeCompetence = $grpeCompetence;
+
+        return $this;
+    }
+
 }

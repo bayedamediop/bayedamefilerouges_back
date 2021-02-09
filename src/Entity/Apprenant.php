@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ORM\Entity(repositoryClass=ApprenantRepository::class)
  * @ApiResource(
  *  attributes={
- *          "security" = "is_granted('ROLE_FORMATEUR')",
+ *          "security" = "is_granted('ROLE_FORMATEUR') or is_granted('ROLE_ADMIN')",
  *          "security_message" = "vous n'avez pas accès a cette resource"
  *          
  *      },
@@ -58,10 +58,17 @@ class Apprenant extends User
      */
     private $competenceValides;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Promos::class, mappedBy="apprenant")
+     */
+    private $promos;
+
+
     public function __construct()
     {
         $this->groupes = new ArrayCollection();
         $this->competenceValides = new ArrayCollection();
+        $this->promos = new ArrayCollection();
     }
 
     /**
@@ -117,4 +124,36 @@ class Apprenant extends User
 
         return $this;
     }
+
+    /**
+     * @return Collection|Promos[]
+     */
+    public function getPromos(): Collection
+    {
+        return $this->promos;
+    }
+
+    public function addPromo(Promos $promo): self
+    {
+        if (!$this->promos->contains($promo)) {
+            $this->promos[] = $promo;
+            $promo->setApprenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removePromo(Promos $promo): self
+    {
+        if ($this->promos->removeElement($promo)) {
+            // set the owning side to null (unless already changed)
+            if ($promo->getApprenant() === $this) {
+                $promo->setApprenant(null);
+            }
+        }
+
+        return $this;
+    }
+
+
 }

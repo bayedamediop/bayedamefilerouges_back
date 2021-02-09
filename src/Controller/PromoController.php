@@ -1,25 +1,26 @@
 <?php
 
 namespace App\Controller;
-use ApiPlatform\Core\Validator\ValidatorInterface;
-use App\Entity\Groupes;
 use  App\Entity\Promos;
+use App\Entity\Groupes;
 use App\Entity\Referentiels;
-use App\Repository\ApprenantRepository;
-use App\Repository\CompetenceRepository;
-use App\Repository\GroupeCompetenceRepository;
-use App\Repository\GroupesRepository;
+use App\Service\PostService;
+use App\Repository\UserRepository;
 use App\Repository\NiveauRepository;
 use App\Repository\PromosRepository;
-use App\Repository\ReferentielsRepository;
-use App\Repository\UserRepository;
+use App\Repository\GroupesRepository;
+use App\Repository\ApprenantRepository;
+use App\Repository\CompetenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Repository\ReferentielsRepository;
 use Symfony\Component\HttpFoundation\Request;
+use App\Repository\GroupeCompetenceRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use ApiPlatform\Core\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class PromoController extends AbstractController
 {
@@ -45,6 +46,8 @@ class PromoController extends AbstractController
         $this->serializer = $serializer;
         $this->apprenantRepository = $apprenantRepository;
     }
+
+
     /**
  *
  * @Route (
@@ -58,73 +61,47 @@ class PromoController extends AbstractController
  *         }
  * )
  */
-   public  function createPromos( Request $request){
-            $json =$this->serializer->decode($request->getContent(),"json");
+   public  function createPromos( Request $request,PostService $service){
+            $json = $request->request->all();
+            //dd($json);
             //dd($json['etudiants']);
-       foreach ($json as $jsons){
-           if ($this->promosRepository->findOneBy(['titre'=>$json['titre']])){
-
-               $objetjson=$this->promosRepository->findOneBy(['titre'=>$json['titre']]);
-               //dd($objetjson);
-               foreach ($json['referentiels'] as $referentiels){
-                   if ($this->referentielsRepository->findOneBy(["libelle"=>$referentiels["libelle"]])){
-                       //recuperation l' objet de referentielles
-                       $objetreferentiel=$this->referentielsRepository->findOneBy(['libelle'=>$referentiels['libelle']]);
-                       $objetreferentiel->addPromo($objetjson);
-                       $this->em->persist($objetreferentiel);
-                   }
-               }
-               foreach ($json['groupes'] as $groupe){
-                   if ($this->groupesRepository->findOneBy(["nom"=>$groupe["nom"]])){
-                       //recuperation l' objet de referentielles
-                       $objetgroupes=$this->groupesRepository->findOneBy(['nom'=>$groupe['nom']]);
-
-                       $objetjson->addGroupe($objetgroupes);
-                       // eecupere l id de l etudiant
-
-                       $this->em->persist($objetjson);
-                   }
-               }
-                       $this->em->flush();
-           }else{
-               $promos = new Promos();
+             $photo = $request->files->get("avatar");
+             if(!$photo)
+            {
+                return new JsonResponse("veuillez mettre une images",Response::HTTP_BAD_REQUEST,[],true);
+            }
+            $base64 = base64_decode($photo);
+            $photoBlob = fopen($photo->getRealPath(),"rb");
+        $promos = new Promos();
                $promos->setLangue($json['langue'])
                    ->setTitre($json['titre'])
                    ->setDescription($json['description'])
                    ->setLieu($json['lieu'])
                    ->setFabrique($json['fabrique'])
+                   ->setAvatar($photoBlob)
                    ->setDateDebut(new \DateTime())
                    ->setDateFinProvisoire( new \DateTime())
                    ->setDateFinReel(new \DateTime())
                    ->setEtat($json['etat']);
-               //creation des groupes
-               $objetreferentiel = new Referentiels();
-             // dd($json['referentiels']);
-              foreach ($json['referentiels'] as $referentiel)
-               $objetreferentiel->setLibelle($referentiel["libelle"])
-                   ->setPresentation($referentiel['presentation'])
-                   ->setProgramme($referentiel['programme'])
-                   ->setEvaluation($referentiel['evaluation'])
-                   ->setAdmission($referentiel['admission']);
-               $objetreferentiel->addPromo($promos);
-               $this->em->persist($objetreferentiel);
-               foreach ($json['groupes'] as $jsongroue){
-                 //  dd($jsongroue);
-                   $groupe = new Groupes();
-                   $groupe->setNom($jsongroue['nom'])
-                       ->setType($jsongroue['type'])
-                       ->setStatut(1)
-                       ->setDateCreation(new \DateTime());
-
-                   $promos->addGroupe($groupe);
-
-                   $this->em->persist($promos);
-
+               if ($json['referentiels']){
+                    if($this->referentielsRepository->find((int)$json['referentiels'])){
+                       $objet=($this->referentielsRepository->find((int)$json['referentiels']));
+                      $promos->setReferentiels($objet);                     
+                    }
+                   }
+               
+             if ($json['apprenents']) {
+                 //dd($json['apprenents']['profile']);
+               $compte = explode(' ',$json['apprenents']);
+               for ($i=0; $i < count($compte) ; $i++) { 
+                //dd($compte[$i])
+                   $aprenant = $this->apprenantRepository->find((int)$compte[$i]);
+                $promos->setApprenant($aprenant);
                }
-              // $this->em->flush();
-           }
+
+             }
+               $this->em->persist($promos);   
            $this->em->flush();
-       }
        return $this->json("valider");
    }
 

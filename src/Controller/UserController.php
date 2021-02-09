@@ -113,22 +113,22 @@ class UserController extends AbstractController
 
      }
 /**
-         * @Route(
-         *  name = "update",
-         *  path = "/api/admin/users/{id}",
-         *  methods = {"PUT"},
-         *  defaults  = {
-         *      "__controller"="App\Controller\UserController::update",
-         *      "__api_ressource_class"=User::class,
-         *      "__api_collection_operation_name"="update_users"
-         * }
-         * )
-         */
-    public function update($id,PostService $service, Request $request, EntityManagerInterface $manager,SerializerInterface $serializer,UserRepository $u)
+     * @Route(
+     *     "api/admin/users/{id}",
+     *      name="putUserId",
+     *     methods={"PUT"},
+     *     defaults={
+     *      "_api_resource_class"=User::class,
+     *      "_api_item_operation_name"="putUserId"
+     *     }
+     *     )
+     */
+    public function putUserId($id,PostService $service, Request $request, EntityManagerInterface $manager,SerializerInterface $serializer,UserRepository $u)
     {
-        $userForm= $service->PutUser($request);
-       // dd($userForm);
+        $userForm= $service->PutUser($request, 'avatar');
+       //dd($userForm);
         $userUpdate = $service->PutUser($request, 'avatar');
+       // dd($userUpdate);
         $user = $u->find($id);
         foreach ($userForm as $key => $value) {
             if($key === 'profile'){

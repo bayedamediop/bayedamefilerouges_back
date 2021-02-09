@@ -16,14 +16,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *        "add_niveauCompetence"={
  *                  "route_name"="creatNiveauCompetence"
  *              },
- *              "GetGrroupesCompetences"={
- *                         "path"="/admin/grpecompetences/{id}",
+ *          "get_competences_and_niveaux"={
+ *          "method"= "GET",
+ *          "path"= "/admin/competences",
+ *           "normalization_context"={"groups"={"competence:read"}},
+ *          "security" = "(is_granted('ROLE_ADMIN') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_CM'))",         
+ *      },
+ *     "GetCompetences"={
+ *                         "path"="/admin/competences",
  *                          "method" = "GET",
- *                           "normalization_context"={"groups"={"grpcompetence:read"}},
+ *                           "normalization_context"={"groups"={"competence:read"}},
  *                             "security" = "(is_granted('ROLE_ADMIN') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_CM'))",
  *                            "security_message" = " OBBB ,vous n'avez pas accès a cette resource"
  *             }
- *             },
+ *           },
  * )
  */
 class Competence
@@ -32,19 +38,19 @@ class Competence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups ({"addreferentiel:read"})
+     * @Groups ({"addreferentiel:read","competence:read","grpcompetence:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups ({"grpcompetencecompe:read","referentiel:read"})
+     * @Groups ({"grpcompetencecompe:read","referentiel:read","grpcompetence:read","competence:read"})
      */
     private $libelle;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups ({"grpcompetencecompe:read","referentiel:read"})
+     * @Groups ({"grpcompetencecompe:read","referentiel:read","grpcompetence:read"})
      */
     private $description;
 
@@ -64,13 +70,12 @@ class Competence
      */
     private $competenceValides;
 
-
-
     public function __construct()
     {
         $this->groupeCompetences = new ArrayCollection();
         $this->niveaux = new ArrayCollection();
         $this->competenceValides = new ArrayCollection();
+        $this->referentiels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -189,5 +194,4 @@ class Competence
         return $this;
     }
 
-
-}
+    }

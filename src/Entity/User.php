@@ -48,8 +48,13 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  *            "delete"={
  *                      "method"="DELETE",
   *                    "path" = "/admin/users/{id}",
-  *              }
- *
+  *              },
+  *      "putUserId":{
+ *           "method":"put",
+ *          "path":"/admin/users/{id}",
+ *              "access_control"="(is_granted('ROLE_ADMIN') )",
+ *              "deserialize"= false,
+ *          }
  * },
  * )
  * @UniqueEntity ("email",
@@ -66,7 +71,7 @@ class User implements UserInterface
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      * @Groups ({"addreferentiel:read"})
-     * @Groups({"user:read","profil:read","apprenant:read","formateur:read"})
+     * @Groups({"user:read","profil:read","profilUser:read","apprenant:read","formateur:read"})
      */
     protected $id;
 
@@ -74,7 +79,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\NotBlank(message="L ' email doit etre unique")
      * * @Assert\Email(message = "The email '{{ value }}' is not a valid email.")
-     *  @Groups({"user:read","profil:read","apprenant:read","formateur:read"})
+     *  @Groups({"user:read","profil:read","apprenant:read","formateur:read","users:read"})
      */
     private $email;
 
@@ -104,7 +109,7 @@ class User implements UserInterface
     private $prenom;
 
     /**
-     * @ORM\Column(type="string", length=255 )
+     * @ORM\Column(type="string", length=255 ,nullable=true )
      * @Assert\NotBlank(message="Veuillez entre votre un numero telephone")
      * 
      *  @Groups({"user:read","profil:read","apprenant:read","formateur:read","apprenantsAttante:read","promoRefForGroupe:read","getapprenant:read"})
@@ -114,7 +119,7 @@ class User implements UserInterface
     /**
      * @ORM\ManyToOne(targetEntity=Profile::class, inversedBy="users")
      * @Assert\NotBlank(message="Veuillez charger une image")
-     *   @Groups({"user:read","profil:read","apprenant:read"})
+     *   @Groups({"user:read","apprenant:read"})
      */
     private $profile;
 
@@ -122,7 +127,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255)
      * 
      */
-    private $isdelate='0';
+    private $isdelate='1';
 
     /**
      * @ORM\Column(type="blob",nullable=true)
@@ -133,14 +138,14 @@ class User implements UserInterface
     private $avatar;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $adresse;
 
     /**
      * @ORM\Column(type="string",nullable=true)
      */
-    private $attente;
+    private $attente ='0';
 
     public function getId(): ?int
     {
@@ -280,7 +285,11 @@ class User implements UserInterface
 
     public function getAvatar() 
     {
-        return $this->avatar;
+        $avatar = $this->avatar;
+        if ($avatar) {
+            return (base64_encode(stream_get_contents($this->avatar)));
+        }
+        return $avatar;
     }
 
     public function setAvatar($avatar): self

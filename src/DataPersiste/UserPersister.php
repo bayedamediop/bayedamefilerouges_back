@@ -32,7 +32,7 @@ final class UserPersister implements ContextAwareDataPersisterInterface
     public function remove($data, array $context = [] )
     {
 
-        $data->setIsdelate('1');
+        $data->setIsdelate('0');
         $this->manager->flush();
         return $data;
       // call your persistence layer to delete $data

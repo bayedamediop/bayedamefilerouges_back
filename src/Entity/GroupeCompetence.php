@@ -18,8 +18,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *    },
  *     collectionOperations={
  *        "add_groupeCompetence"={
- *                  "route_name"="creatGroupeCompetence"
- *
+ *                         "path"="/admin/grpecompetences",
+ *                          "method" = "POST",
+ *                           "denormalization_context"={"groups"={"grpcompetence:write"}},
  *              },
  *              "GetGrroupesCompetences"={
  *                         "path"="/admin/grpecompetences",
@@ -67,34 +68,38 @@ class GroupeCompetence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     *  @Groups ({"grpcompetence:read"})
      */
     private $id;
 
     /**
      * @ORM\ManyToMany(targetEntity=Competence::class, inversedBy="groupeCompetences",cascade={"persist"})
-     * @Groups ({"grpcompetencecompe:read"})
-     *
-     *
+     * @Groups ({"grpcompetencecompe:read","grpcompetence:read","grpcompetence:write"})
      */
     private $competence;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups ({"grpcompetence:read","grpcompetencecompe:read","referentiel:read"})
-
+     * @Groups ({"grpcompetence:read","grpcompetencecompe:read","referentiel:read","grpcompetence:write"})
      */
     private $libelle;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups ({"grpcompetence:read","grpcompetencecompe:read","referentiel:read"})
+     * @Groups ({"grpcompetence:read","grpcompetencecompe:read","referentiel:read","grpcompetence:write"})
 
      */
     private $description;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Referentiels::class, mappedBy="grpeCompetence")
+     */
+    private $referentiels;
+
     public function __construct()
     {
         $this->competence = new ArrayCollection();
+        $this->referentiels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -146,6 +151,36 @@ class GroupeCompetence
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Referentiels[]
+     */
+    public function getReferentiels(): Collection
+    {
+        return $this->referentiels;
+    }
+
+    public function addReferentiel(Referentiels $referentiel): self
+    {
+        if (!$this->referentiels->contains($referentiel)) {
+            $this->referentiels[] = $referentiel;
+            $referentiel->setGrpeCompetence($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReferentiel(Referentiels $referentiel): self
+    {
+        if ($this->referentiels->removeElement($referentiel)) {
+            // set the owning side to null (unless already changed)
+            if ($referentiel->getGrpeCompetence() === $this) {
+                $referentiel->setGrpeCompetence(null);
+            }
+        }
 
         return $this;
     }
