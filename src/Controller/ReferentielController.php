@@ -60,8 +60,6 @@ class ReferentielController extends AbstractController
          *         }
          * )
          */
-
-
     public function creatReferentiels(Request $request,GroupeCompetenceRepository $grpeRepository){
     // $json = json_decode($request->getContent());
        $json = $request->request->all();
