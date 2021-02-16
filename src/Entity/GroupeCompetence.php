@@ -73,16 +73,16 @@ class GroupeCompetence
     private $id;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Competence::class, inversedBy="groupeCompetences",cascade={"persist"})
-     * @Groups ({"grpcompetencecompe:read","grpcompetence:read","grpcompetence:write"})
-     */
-    private $competence;
-
-    /**
      * @ORM\Column(type="string", length=255)
      * @Groups ({"grpcompetence:read","grpcompetencecompe:read","referentiel:read","grpcompetence:write"})
      */
     private $libelle;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Competence::class, inversedBy="groupeCompetences",cascade={"persist"})
+     * @Groups ({"grpcompetencecompe:read","grpcompetence:read","grpcompetence:write"})
+     */
+    private $competence;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -107,6 +107,11 @@ class GroupeCompetence
         return $this->id;
     }
 
+    public function getLibelle(): ?string
+    {
+        return $this->libelle;
+    }
+
     /**
      * @return Collection|Competence[]
      */
@@ -129,11 +134,6 @@ class GroupeCompetence
         $this->competence->removeElement($competence);
 
         return $this;
-    }
-
-    public function getLibelle(): ?string
-    {
-        return $this->libelle;
     }
 
     public function setLibelle(string $libelle): self

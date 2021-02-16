@@ -79,7 +79,7 @@ class Profile
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez entre votre prenom")
-     * @Groups({"users:read","profille:read","users:read"})
+     * @Groups({"user:read","profille:read","users:read"})
      */
     private $libelle;
 

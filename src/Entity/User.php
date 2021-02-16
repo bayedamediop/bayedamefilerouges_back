@@ -119,7 +119,7 @@ class User implements UserInterface
     /**
      * @ORM\ManyToOne(targetEntity=Profile::class, inversedBy="users")
      * @Assert\NotBlank(message="Veuillez charger une image")
-     *   @Groups({"user:read","apprenant:read"})
+     * @Groups({"user:read","apprenant:read"})
      */
     private $profile;
 

@@ -49,7 +49,7 @@ class UserController extends AbstractController
         $this->manager =$manager;
 
 
-    }
+ }
 /**
      * @Route(
      *  name = "addUser",
@@ -131,7 +131,7 @@ class UserController extends AbstractController
        // dd($userUpdate);
         $user = $u->find($id);
         foreach ($userForm as $key => $value) {
-            if($key === 'profile'){
+            if($key === 'profil'){
                 $value = $serializer->denormalize($value, Profile::class);
             }
             $setter = 'set'.ucfirst(trim(strtolower($key)));
