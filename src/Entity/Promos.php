@@ -110,7 +110,7 @@ class Promos
     private $avatar;
 
     /**
-     * @ORM\Column(type="blob",nullable=true)
+     * @ORM\Column(type="string", length=255)
      * @Groups ({"promoRefForGroupe:read"})
      */
     private $fabrique;
