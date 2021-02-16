@@ -29,6 +29,11 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  *                          "method" = "GET",
  *                           "normalization_context"={"groups"={"promoRefForGroupe:read"}},
  *                      },
+ *     "getLesApprennts"={
+ *                         "path"="/admin/promos/apprenents",
+ *                          "method" = "GET",
+ *                           "normalization_context"={"groups"={"aprenents:read"}},
+ *                      },
  *     "apprenantsAttantes"={
  *                  "method" = "GET",
  *                  "path" = "/admin/promo/apprenants/attente",
